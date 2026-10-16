@@ -1,0 +1,182 @@
+[
+  {
+    "description": "Simple filter and lookup",
+    "question": "Show all students in CSE department with CGPA above 8.5",
+    "plan": {
+      "intent": "filter",
+      "filters": [
+        {"target": {"column": "Department"}, "op": "eq", "value": "CSE"},
+        {"target": {"column": "CGPA"}, "op": "gt", "value": 8.5}
+      ],
+      "group_by": [],
+      "metrics": [],
+      "select_columns": ["Student ID", "Name", "Department", "CGPA"],
+      "sort": [{"by": "CGPA", "direction": "desc"}],
+      "limit": null,
+      "chart": "none",
+      "interpretation": "Listing CSE students having a CGPA strictly greater than 8.5.",
+      "confidence": "high"
+    }
+  },
+  {
+    "description": "Group by with aggregation and % of total",
+    "question": "What is the total revenue and percentage of total by Region?",
+    "plan": {
+      "intent": "aggregate",
+      "filters": [],
+      "group_by": [{"column": "Region"}],
+      "metrics": [
+        {"column": "Revenue", "agg": "sum", "alias": "total_revenue", "pct_of_total": true}
+      ],
+      "sort": [{"by": "total_revenue", "direction": "desc"}],
+      "chart": "bar",
+      "chart_x": "Region",
+      "chart_y": "total_revenue",
+      "interpretation": "Aggregating total revenue and share of total revenue grouped by Region.",
+      "confidence": "high"
+    }
+  },
+  {
+    "description": "Top N records",
+    "question": "Top 5 highest paid placed students",
+    "plan": {
+      "intent": "top_n",
+      "filters": [
+        {"target": {"column": "Placement Status"}, "op": "eq", "value": "Placed"}
+      ],
+      "group_by": [],
+      "metrics": [],
+      "select_columns": ["Name", "Department", "Company", "Salary LPA"],
+      "sort": [{"by": "Salary LPA", "direction": "desc"}],
+      "limit": 5,
+      "chart": "bar",
+      "chart_x": "Name",
+      "chart_y": "Salary LPA",
+      "interpretation": "Selecting top 5 placed students ordered by highest salary.",
+      "confidence": "high"
+    }
+  },
+  {
+    "description": "Date part grouping",
+    "question": "Monthly sales trend for 2023",
+    "plan": {
+      "intent": "aggregate",
+      "filters": [
+        {"target": {"column": "Order Date", "date_part": "year"}, "op": "eq", "value": 2023}
+      ],
+      "group_by": [
+        {"column": "Order Date", "date_part": "month"}
+      ],
+      "metrics": [
+        {"column": "Sales", "agg": "sum", "alias": "monthly_sales"}
+      ],
+      "sort": [{"by": "__Order Date_month__", "direction": "asc"}],
+      "chart": "line",
+      "chart_x": "__Order Date_month__",
+      "chart_y": "monthly_sales",
+      "interpretation": "Calculating total sales per month for the year 2023.",
+      "confidence": "high"
+    }
+  },
+  {
+    "description": "Having clause on aggregated results",
+    "question": "Which departments have more than 3 placed students?",
+    "plan": {
+      "intent": "aggregate",
+      "filters": [
+        {"target": {"column": "Placement Status"}, "op": "eq", "value": "Placed"}
+      ],
+      "group_by": [{"column": "Department"}],
+      "metrics": [
+        {"column": "Student ID", "agg": "count", "alias": "placed_count"}
+      ],
+      "having": [
+        {"metric": "placed_count", "op": "gt", "value": 3}
+      ],
+      "sort": [{"by": "placed_count", "direction": "desc"}],
+      "chart": "bar",
+      "chart_x": "Department",
+      "chart_y": "placed_count",
+      "interpretation": "Finding departments having more than 3 placed students.",
+      "confidence": "high"
+    }
+  },
+  {
+    "description": "Period or group comparison",
+    "question": "Compare sales between North and South regions across Categories",
+    "plan": {
+      "intent": "compare",
+      "group_by": [{"column": "Category"}],
+      "metrics": [
+        {"column": "Sales", "agg": "sum", "alias": "total_sales"}
+      ],
+      "compare": [
+        {"label": "North", "filters": [{"target": {"column": "Region"}, "op": "eq", "value": "North"}]},
+        {"label": "South", "filters": [{"target": {"column": "Region"}, "op": "eq", "value": "South"}]}
+      ],
+      "chart": "bar",
+      "interpretation": "Comparing total sales across categories between North and South regions.",
+      "confidence": "high"
+    }
+  },
+  {
+    "description": "Distinct values count",
+    "question": "What companies hired our students and how many each?",
+    "plan": {
+      "intent": "distinct",
+      "filters": [
+        {"target": {"column": "Company"}, "op": "not_null", "value": null}
+      ],
+      "group_by": [{"column": "Company"}],
+      "sort": [{"by": "count", "direction": "desc"}],
+      "chart": "bar",
+      "chart_x": "Company",
+      "chart_y": "count",
+      "interpretation": "Counting number of student placements per distinct company.",
+      "confidence": "high"
+    }
+  },
+  {
+    "description": "Clarification for ambiguous metric or column",
+    "question": "Who is the best student?",
+    "plan": {
+      "intent": "clarify",
+      "clarification_question": "How would you like to define 'best student'?",
+      "clarification_options": [
+        "Highest CGPA",
+        "Highest Salary LPA",
+        "Highest Attendance Rate"
+      ],
+      "interpretation": "Clarification needed: the criterion for 'best student' is undefined.",
+      "confidence": "low"
+    }
+  },
+  {
+    "description": "Unsupported request for forecasting",
+    "question": "Predict what our sales will be in Q4 2025",
+    "plan": {
+      "intent": "unsupported",
+      "unsupported_reason": "ExcelMind AI analyzes historical data deterministically and does not perform predictive forecasting.",
+      "interpretation": "Forecasting future sales is not supported in version 1.",
+      "confidence": "high"
+    }
+  },
+  {
+    "description": "Causal / Why question answered with comparison",
+    "question": "Why did profits drop in March?",
+    "plan": {
+      "intent": "compare",
+      "group_by": [{"column": "Category"}],
+      "metrics": [
+        {"column": "Profit", "agg": "sum", "alias": "total_profit"},
+        {"column": "Sales", "agg": "sum", "alias": "total_sales"}
+      ],
+      "compare": [
+        {"label": "February", "filters": [{"target": {"column": "Order Date", "date_part": "month"}, "op": "eq", "value": 2}]},
+        {"label": "March", "filters": [{"target": {"column": "Order Date", "date_part": "month"}, "op": "eq", "value": 3}]}
+      ],
+      "interpretation": "Comparing Category profits and sales between February and March to show where changes occurred.",
+      "confidence": "medium"
+    }
+  }
+]

@@ -1,0 +1,6 @@
+{
+  "name": "ExcelMind AI",
+  "description": "Conversational spreadsheet intelligence with deterministic calculations, evidence-backed answers, auto-insights, and interactive charts.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
